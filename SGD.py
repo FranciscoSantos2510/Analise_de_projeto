@@ -183,25 +183,28 @@ def guardar_dados(): #função para guardar os dados
                 json.dump(dados, ficheiro, ensure_ascii=False, indent= 4) #guardar dados no ficheiro
 
 
+lista_de_encomendas = Gestor_de_encomendas() #atribuimos igualdade para a função dados  
+
 def carregar_dados(): #Função para carregar os dados guardados no json
-    global lista_de_encomendas #Precisamos de aceder ao que está la fora
-    lista_de_encomendas = Gestor_de_encomendas() #atribuimos igualdade
-    
 
     if os.path.exists("Encomendas.json"): #verifica se o ficheiro existe
          with open("Encomendas.json", "r", encoding="utf-8") as ficheiro: #se existrir abre para leitura
-             dados = json.load(ficheiro) #carrega os dados
+            try:
+                dados = json.load(ficheiro) #carrega os dados
+            except json.JSONDecodeError:
+                print("Erro: O ficheiro está corrompido ou mal formatado.")
+                return    
 
-             for encomendas_dict in dados: #iterar sobre os dicionarios do json
-                   id_encomenda = int(encomendas_dict["id"])
-                   descricao = str(encomendas_dict["descricao"])
-                   cliente= str(encomendas_dict["cliente"])
-                   estado = str(encomendas_dict["estado"])
-                   doca = int(encomendas_dict["doca"])
-                   data = str(encomendas_dict["data"])
-                   encomenda = Encomenda(id_encomenda, descricao, cliente, estado, doca, data) #precisamos de definir uma variavel
-                   lista_de_encomendas.adicionar_encomenda(encomenda) #lista de encomendas criada na função menu e acedemos ao meotodo adicionar encomenda da class Gestor de encomendas e guardamos a variavel da linha acima.
+            for encomendas_dict in dados: #iterar sobre os dicionarios do json
+                id_encomenda = int(encomendas_dict["id"])
+                descricao = str(encomendas_dict["descricao"])
+                cliente= str(encomendas_dict["cliente"])
+                estado = str(encomendas_dict["estado"])
+                doca = int(encomendas_dict["doca"])
+                data = str(encomendas_dict["data"])
+                encomenda = Encomenda(id_encomenda, descricao, cliente, estado, doca, data) #precisamos de definir uma variavel
+                lista_de_encomendas.adicionar_encomenda(encomenda) #lista de encomendas criada na função menu e acedemos ao meotodo adicionar encomenda da class Gestor de encomendas e guardamos a variavel da linha acima.
 
-                        #Check-point 18:37
+                        #Check-point 19:01
 
                         
