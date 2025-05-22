@@ -298,15 +298,11 @@ class Gestor_de_doca():
     def ocupar_doca(id_doca):
         #continuar. Interrupção 00:10        
 
-
-
-
-                                                     
-
 #Fim de classes e metodos 11/5/25 17:46
-# Inicio do Menu                                                     e funções
-def erro (mensagem): #Função de erro
-    print(f"!!!!!!ERRO!!!!!!!! {mensagem}") #Mensagem generica com mensagem personalizada quando a função for invocada
+# Inicio do Menu e funções
+
+        def erro (mensagem): #Função de erro
+            print(f"!!!!!!ERRO!!!!!!!! {mensagem}") #Mensagem generica com mensagem personalizada quando a função for invocada
 
 lista_de_encomendas = Gestor_de_encomendas() #atribuimos igualdade para a função dados      
 
@@ -381,16 +377,16 @@ def menu(): #Contrutor de menu
         try:
 
             print("\n".join([
-                "\t\b[0] Terminar o programa",
-                "\t\b[1] Adicionar encomenda",
-                "\t\b[2] Remover encomenda",
-                "\t\b[3] Procurar encomenda",
-                "\t\b[4] Listar encomenda",
-                "\t\b[5] Listar encomendas com o estado desejado",
+                "\t\b[0] Terminar o programa\n",
+                "\t\b[1] Adicionar encomenda\n",
+                "\t\b[2] Remover encomenda\n",
+                "\t\b[3] Procurar encomenda\n",
+                "\t\b[4] Listar encomenda\n",
+                "\t\b[5] Listar encomendas com o estado desejado\n",
                 "\t\b[6] Atualizar o estado da encomenda\n"
             ]))
 
-            op = int(input("Introduz um numero de [0] até [6]\n \t\bAtenção [0] PARA O PROGRAMA"))
+            op = int(input("Introduz um numero de [0] até [6]\n \t\bAtenção [0] PARA O PROGRAMA\n"))
 
             if op not in [0, 1, 2, 3, 4, 5, 6]: #verificação se o utilizador colocou uma opção correta.
 
@@ -405,8 +401,77 @@ def menu(): #Contrutor de menu
 
 lista_de_encomendas = Gestor_de_encomendas() # criamos a lista de ecomendas e atribuimos igualdade à class Gestor de Encomendas
 
+carregar_dados(lista_de_encomendas)
+
+while True:
+    op = menu()
+
+    match op:
+
+        case 0: 
+            guardar_dados()
+            print("\bA encerrar o programa!\n")
+            break
+
+        case 1: 
+            print("\bA adicionar encomenda\n")
+
+            id_enc = int(input("\tIntroduz um id à encomenda\n"))
+
+            desc = input("\tIntroduz uma descrição para a encomenda\n")
+
+            cli = input("\tIntroduz o nome do cliente\n")
+
+            est = input("\tIntroduz o estado da encomenda\n")
+
+            doc = input("\tIntroduz a doca associada a encomenda\n")
+
+            dat= input("\tIntroduz a data da encomenda\n")
+
+            nova_encomenda = encomenda(id_enc, desc, cli, est, doc, dat)
+
+            lista_de_encomendas.adicionar_encomenda(nova_encomenda)
+
+            guardar_dados()
+
+        case 2:
+            print("\tRemover encomenda\n")
+
+            pesquisa_para_remover = input("\tIntroduz o id da encomenda que queres remover\n")
+            lista_de_encomendas.remover_encomenda(pesquisa_para_remover)
+
+            guardar_dados()
+
+        case 3:
+            print("\tProcurar encomenda\n")
+
+            encomenda_a_procurar = input("\tIntroduz a encomenda a procurar pelo id\n")
+
+            lista_de_encomendas.procurar_encomenda(encomenda_a_procurar)
+
+        case 4:
+            print("\tListar encomendas\n")
+
+            lista_de_encomendas.listar_encomendas()
+
+        case 5:
+            print("\tFiltrar a encomenda pelo estado\n")
+
+            estado_a_filtrar = input("Qual o estado que queres filtrar\n")
+
+            lista_de_encomendas.filtrar_por_estado(estado_a_filtrar)
+
+        case 6:
+            print("\tVamos atualizar o estado da encomenda:\n")
+
+            nova_estado = input("\tIntroduz o novo estado para a encomenda\n")
+
+            lista_de_encomendas.atualizar_o_estado_da_encomenda(nova_estado)
 
 
                         #Check-point 18:37
                         #Inicio 17/05 as 15:00 interrupção 19:00 retorno 22:00 feito class cliente user e doca desenvolver a class gestor de doca
                         #Interrupção 00:10
+                        #Filtrar a encomenda por docas
+                        #Se for o user só pode aceder ao estado das encomendas e listagem das encomendas por docas associadas se for administrador pode ter acesso a tudo
+                        #Class Doca definir a capacidade       
