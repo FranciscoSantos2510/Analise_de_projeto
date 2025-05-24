@@ -1,5 +1,4 @@
-
-                                                                            #SISTEMA DE GESTÃO DE DOCAS Inicio 4/5/25
+                                                                           #SISTEMA DE GESTÃO DE DOCAS Inicio 4/5/25
 import json
 
 import os
@@ -8,8 +7,9 @@ class Encomenda:
     estados_validos = ("pendente", "em preparação", "expedida", "entregue", "cancelada")
 
     def __init__(self, id_encomenda, descricao, cliente: 'Cliente', estado, doca: 'Doca', data):#'Cliente' e 'Doca'<- Relacionar com a class,
-       if estado not in self.estados_validos:
-        raise ValueError(f"Estado '{estado}' inválido. Estados válidos: {self.estados_validos}") #Bloqueia a criação de estados invalidos mais a ferente 
+       #Valida o estado inicial
+       if not self.estado_valido(estado):
+           raise ValueError(f"Estado '{estado}' inválido. Estados válidos: {self.estados_validos}") #Bloqueia a criação de estados invalidos mais a ferente 
       
 
        self.id = id_encomenda #id da encomenda
@@ -24,55 +24,51 @@ class Encomenda:
 
        self.data = data #hora da criação da encomenda
 
+    def estado_valido(self, estado):
+        return estado in self.estados_validos
 
+    def atualizar_estado(self, novo_estado=None):
+        if novo_estado is None:
+         novo_estado = input("Introduz o novo estado da encomenda:\n").lower()
+         if not self.estado_valido(novo_estado):
+            raise ValueError(f"Estado '{novo_estado}' inválido. Estados válidos: {self.estados_validos}")
+        self.estado = novo_estado
+        print("Estado atualizado com sucesso.\n")
 
-    def atualizar_estado(self):                                                     #Pausa 4/5/25 20:30  #retorno 8/5/25 19:20
-           
-           print(f"O estado atual da encomenda é: {self.estado}")
-
-           print(f"Os estados possiveis da ecomenda são: {self.estados_validos}")
-
-           novo_estado = input("Introduz um novo estado para a encomenda:\n")
-
-           if novo_estado in self.estados_validos:
-               
-               self.estado = novo_estado
-
-           else:
-               print("Estado invalido!") 
-
-   
     def exibir_detalhes(self):
         
-       print(f"""
-               ID da encomenda: {self.id}
-               Estado: {self.estado}
-               Descrição: {self.descricao}
-               Cliente: {self.cliente}
-               Doca atribuída: {self.doca}
-               Data da encomenda: {self.data}
-               """)
+       print(f""" ID da encomenda: {self.id}             
+Estado: {self.estado}
+Descrição: {self.descricao}
+Cliente: {self.cliente}
+Doca atribuída: {self.doca}
+Data da encomenda: {self.data}
+""")
 
 class User:
     utilizadores_validos = {
-        "gestor" : "sgd",
-        "admin" : "adminsgd" 
+        "utilizador": "sgd",
+        "admin": "adminsgd"
     }
 
-    def autenticar(self):
-        conta = input("Introduz uma conta de utlizador:\n")
-        if conta in self.utilizadores_validos:
-                senha = input("Introduz a password de utlizador\n")
-                if senha == self.utilizadores_validos[conta]:
-                    print("Acesso Autoririzado\n")
-                    return True
-                else:
-                    print("Password incorreta.\n")
-                    return False
+    def __init__(self, nome, role):
+        self.nome = nome
+        self.role = role  # "admin" ou "gestor"
 
-        else : 
-                print("Utilizador invalido!\n")
-                return False
+    @classmethod
+    def autenticar(cls):
+        conta = input("Introduz uma conta de utilizador:\n")
+        if conta in cls.utilizadores_validos:
+            senha = input("Introduz a password de utilizador:\n")
+            if senha == cls.utilizadores_validos[conta]:
+                print("Acesso autorizado\n")
+                return cls(nome=conta, role=conta)
+            else:
+                print("Password incorreta.\n")
+                return None
+        else:
+            print("Utilizador inválido!\n")
+            return None
 
 class Cliente():
     def __init__(self, id_cliente, nome, morada, email, telefone):
@@ -247,18 +243,20 @@ class Gestor_de_encomendas():
     if not encontrado:
         print("\tEstado não encontrado!\n")    
 
-  def atualizar_o_estado_da_encomenda(self,id_encomenda): #metodo para atualizar o estado
-        
+  def atualizar_o_estado_da_encomenda(self, id_encomenda):
     encontrado = False
-
     for encomenda in self.encomendas:
-
         if encomenda.id == id_encomenda:
-            encomenda.atualizar_estado()
+            novo_estado = input("Introduz o novo estado da encomenda:\n").lower()
+            try:
+                encomenda.atualizar_estado(novo_estado)
+                print("Estado atualizado com sucesso.\n")
+            except ValueError as e:
+                print(f"Erro: {e}\n")
             encontrado = True
             return
     if not encontrado:
-        print("\tImpossivel alterar o estado da encomenda!\n")
+        print("\tImpossível alterar o estado da encomenda!\n")
                             
                                                                         #paragem  8/5/2025 21:00 #retorno 11/5/25 17:00
 
@@ -278,7 +276,7 @@ class Gestor_de_doca():
         encontrado = False
 
         for doca in self.lista_de_docas:
-            if doca.id == remover:
+            if doca.id_doca == remover:
                 self.lista_de_docas.remove(doca)
                 encontrado = True
                 print("Doca removida com exito\n")
@@ -295,9 +293,16 @@ class Gestor_de_doca():
         for doca in self.lista_de_docas:
             doca.exibir_doca()
 
-    def ocupar_doca(id_doca):
-        #continuar. Interrupção 00:10        
-
+    def ocupar_doca(self, id_doca):
+        encontrado = False
+        for doca in self.lista_de_docas:
+            if doca.id_doca == id_doca:
+                doca.ocupar()
+                encontrado = True
+                return
+        if not encontrado:
+            print("Doca não encontrada.\n")
+      
 #Fim de classes e metodos 11/5/25 17:46
 # Inicio do Menu e funções
 
@@ -324,8 +329,8 @@ def guardar_dados(nome_ficheiro="encomendas.json"):
     print("Dados guardados com sucesso.")
 
 def carregar_dados(lista_de_encomendas):  #  recebe a lista onde vai guardar
-    if os.path.exists("Encomendas.json"):  # verifica se o ficheiro existe
-        with open("Encomendas.json", "r", encoding="utf-8") as ficheiro:
+    if os.path.exists("encomendas.json"):  # verifica se o ficheiro existe
+        with open("encomendas.json", "r", encoding="utf-8") as ficheiro:
             try:
                 dados = json.load(ficheiro)  # carrega os dados do ficheiro JSON
 
@@ -369,109 +374,111 @@ def carregar_dados(lista_de_encomendas):  #  recebe a lista onde vai guardar
     else:
         print("Ficheiro de dados não encontrado. Nenhum dado foi carregado.\n")
 
+
+if __name__ == "__main__":
+    utilizador = User.autenticar()
+    if utilizador:
+        if utilizador.role == "admin":
+            print("Bem-vindo ADMIN!")
+            menu_admin(gestor_encomendas, gestor_docas)
+        else:
+            print("Bem-vindo GESTOR!")
+            menu_user(utilizador)
+    else:
+        print("Falha na autenticação. O programa vai terminar.")
+
                 
-def menu(): #Contrutor de menu
+def menu_admin(gestor_encomendas, gestor_docas):
+        print("\n--- MENU ADMIN ---")
+        print("1. Adicionar encomenda")
+        print("2. Remover encomenda")
+        print("3. Listar encomendas")
+        print("4. Atualizar estado da encomenda")
+        print("5. Filtrar encomendas por estado")
+        print("6. Procurar encomenda")
+        print("7. Adicionar doca")
+        print("8. Remover doca")
+        print("9. Listar docas")
+        print("10. Ocupar doca")
+        print("0. Sair")
+        escolha = input("Opção: ")
 
-    while True:  #enquanto existir interação devolve print
-            
-        try:
-
-            print("\n".join([
-                "\t\b[0] Terminar o programa\n",
-                "\t\b[1] Adicionar encomenda\n",
-                "\t\b[2] Remover encomenda\n",
-                "\t\b[3] Procurar encomenda\n",
-                "\t\b[4] Listar encomenda\n",
-                "\t\b[5] Listar encomendas com o estado desejado\n",
-                "\t\b[6] Atualizar o estado da encomenda\n"
-            ]))
-
-            op = int(input("Introduz um numero de [0] até [6]\n \t\bAtenção [0] PARA O PROGRAMA\n"))
-
-            if op not in [0, 1, 2, 3, 4, 5, 6]: #verificação se o utilizador colocou uma opção correta.
-
-                print("Introduz um valor válido!\n")
-
-                continue #força a entrada no menu
-            return op #retorna a escolha novamente
-        
-        except ValueError: #Usa o try para verificar exceção se o utilizador introduzir letras e não numeros!
-
-                print("\t\bDeves introduzir um valor válido [um numero inteiro]!\n")
+        match escolha:
+            case "1":
+                print("Funcionalidade: Adicionar encomenda")
+            case "2":
+                id_encomenda = input("ID da encomenda a remover: ")
+                gestor_encomendas.remover_encomenda(id_encomenda)
+            case "3":
+                gestor_encomendas.listar_encomendas()
+            case "4":
+                id_encomenda = input("ID da encomenda para atualizar estado: ")
+                gestor_encomendas.atualizar_o_estado_da_encomenda(id_encomenda)
+            case "5":
+                estado = input("Estado para filtrar: ")
+                gestor_encomendas.filtrar_por_estado(estado)
+            case "6":
+                id_encomenda = input("ID da encomenda a procurar: ")
+                gestor_encomendas.procurar_encomenda(id_encomenda)
+            case "7":
+                print("Funcionalidade: Adicionar doca (a implementar com input do utilizador)")
+            case "8":
+                id_doca = input("ID da doca a remover: ")
+                gestor_docas.remover_doca(id_doca)
+            case "9":
+                gestor_docas.listar_docas()
+            case "10":
+                id_doca = input("ID da doca a ocupar: ")
+                gestor_docas.ocupar_doca(id_doca)
+            case "0":
+                print("A sair do menu Admin...")
+            case _:
+                print("Opção inválida!")
 
 lista_de_encomendas = Gestor_de_encomendas() # criamos a lista de ecomendas e atribuimos igualdade à class Gestor de Encomendas
 
-carregar_dados(lista_de_encomendas)
+def menu_user(gestor_encomendas): 
+    while True:
+        print("\n--- MENU UTILIZADOR ---")
+        print("1. Listar encomendas")
+        print("2. Atualizar estado da encomenda")
+        print("3. Filtrar encomendas por estado")
+        print("4. Procurar encomenda")
+        print("0. Sair")
+        escolha = input("Opção: ")
 
-while True:
-    op = menu()
+        match escolha:
+            case "1":
+                gestor_encomendas.listar_encomendas()
+            case "2":
+                id_encomenda = input("ID da encomenda para atualizar estado: ")
+                gestor_encomendas.atualizar_o_estado_da_encomenda(id_encomenda)
+            case "3":
+                estado = input("Estado para filtrar: ")
+                gestor_encomendas.filtrar_por_estado(estado)
+            case "4":
+                id_encomenda = input("ID da encomenda a procurar: ")
+                gestor_encomendas.procurar_encomenda(id_encomenda)
+            case "0":
+                print("A sair do menu Gestor...")
+                break
+            case _:
+                print("Opção inválida!")
 
-    match op:
+if __name__ == "__main__":
+    gestor_encomendas = Gestor_de_encomendas()
+    gestor_docas = Gestor_de_doca()
 
-        case 0: 
-            guardar_dados()
-            print("\bA encerrar o programa!\n")
-            break
+    # Carregar dados APÓS criar os gestores
+    carregar_dados(gestor_encomendas)
 
-        case 1: 
-            print("\bA adicionar encomenda\n")
+    utilizador = User.autenticar()
+    if utilizador:
+        if utilizador.role == "admin":
+            menu_admin(gestor_encomendas, gestor_docas)  # Corrigido o nome
+        else:
+            menu_user(gestor_encomendas)  # Usar menu_user, não menu_gestor
+    else:
+        print("Falha na autenticação. O programa vai terminar.")
 
-            id_enc = int(input("\tIntroduz um id à encomenda\n"))
-
-            desc = input("\tIntroduz uma descrição para a encomenda\n")
-
-            cli = input("\tIntroduz o nome do cliente\n")
-
-            est = input("\tIntroduz o estado da encomenda\n")
-
-            doc = input("\tIntroduz a doca associada a encomenda\n")
-
-            dat= input("\tIntroduz a data da encomenda\n")
-
-            nova_encomenda = encomenda(id_enc, desc, cli, est, doc, dat)
-
-            lista_de_encomendas.adicionar_encomenda(nova_encomenda)
-
-            guardar_dados()
-
-        case 2:
-            print("\tRemover encomenda\n")
-
-            pesquisa_para_remover = input("\tIntroduz o id da encomenda que queres remover\n")
-            lista_de_encomendas.remover_encomenda(pesquisa_para_remover)
-
-            guardar_dados()
-
-        case 3:
-            print("\tProcurar encomenda\n")
-
-            encomenda_a_procurar = input("\tIntroduz a encomenda a procurar pelo id\n")
-
-            lista_de_encomendas.procurar_encomenda(encomenda_a_procurar)
-
-        case 4:
-            print("\tListar encomendas\n")
-
-            lista_de_encomendas.listar_encomendas()
-
-        case 5:
-            print("\tFiltrar a encomenda pelo estado\n")
-
-            estado_a_filtrar = input("Qual o estado que queres filtrar\n")
-
-            lista_de_encomendas.filtrar_por_estado(estado_a_filtrar)
-
-        case 6:
-            print("\tVamos atualizar o estado da encomenda:\n")
-
-            nova_estado = input("\tIntroduz o novo estado para a encomenda\n")
-
-            lista_de_encomendas.atualizar_o_estado_da_encomenda(nova_estado)
-
-
-                        #Check-point 18:37
-                        #Inicio 17/05 as 15:00 interrupção 19:00 retorno 22:00 feito class cliente user e doca desenvolver a class gestor de doca
-                        #Interrupção 00:10
-                        #Filtrar a encomenda por docas
-                        #Se for o user só pode aceder ao estado das encomendas e listagem das encomendas por docas associadas se for administrador pode ter acesso a tudo
-                        #Class Doca definir a capacidade       
+        #Fim 24/5 17:30
